@@ -1,0 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', 'Noto Sans KR', sans-serif;
+  }
+}
+
+.table-compact td {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.table-compact td:first-child {
+  padding-left: 24px;
+}
+.table-compact td:last-child {
+  padding-right: 24px;
+}
