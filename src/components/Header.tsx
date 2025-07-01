@@ -24,7 +24,7 @@ const Header: React.FC = () => {
           <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <img src="/ci/LG.svg" alt="LG Logo" className="h-10 w-10" />
-              <span className="text-xl font-bold text-gray-800">LG CNS LMS System</span>
+              <span className="text-xl font-bold text-gray-800">LG CNS Learning Platform</span>
               </div>
               
             <div className="flex items-center space-x-8">
@@ -74,7 +74,7 @@ const Header: React.FC = () => {
                   <div className="p-4">
                     <button
                       onClick={handleLogout}
-                      className="flex items-center space-x-2 w-full px-3 py-2 text-left bg-lg-primary text-white rounded-lg hover:bg-lg-secondary transition-colors"
+                      className="flex items-center space-x-2 w-full px-3 py-2 text-left bg-lg-neutral text-white rounded-lg hover:bg-lg-neutral-hover transition-colors"
                     >
                       <LogOut className="h-4 w-4" />
                       <span>로그아웃</span>

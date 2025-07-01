@@ -3,12 +3,15 @@ import { Search, Play, RefreshCw, BookOpen, Clock, CheckCircle, AlertCircle } fr
 import { curriculumData, completedCurriculumData } from '../data/mockData';
 import { Curriculum } from '../types';
 import LessonModal from './LessonModal';
+import ReportModal from './ReportModal';
 
 const StudentDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'learning' | 'completed'>('learning');
   const [searchTerm, setSearchTerm] = useState('');
   const [openCurriculum, setOpenCurriculum] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
+  const [reportCurriculum, setReportCurriculum] = useState<any>(null);
   const [toastMessage, setToastMessage] = useState<string>('');
 
   const currentCurriculums = activeTab === 'learning' ? curriculumData : completedCurriculumData;
@@ -86,11 +89,19 @@ const StudentDashboard: React.FC = () => {
       setSelectedLesson({
         curriculum: convertedCurriculum,
         module: convertedModule,
-        lesson: convertedLesson
+        lesson: convertedLesson,
+        originalCurriculum: curriculum // 원본 커리큘럼 정보 추가
       });
     } else {
       setToastMessage('이 데이터는 샘플입니다.');
       setTimeout(() => setToastMessage(''), 2000);
+    }
+  };
+
+  const handleShowReport = () => {
+    if (selectedLesson && selectedLesson.originalCurriculum) {
+      setReportCurriculum(selectedLesson.originalCurriculum);
+      setShowReportModal(true);
     }
   };
 
@@ -283,8 +294,20 @@ const StudentDashboard: React.FC = () => {
         <LessonModal
           lesson={selectedLesson}
           onClose={() => setSelectedLesson(null)}
+          onShowReport={handleShowReport}
         />
       )}
+      
+      {showReportModal && reportCurriculum && (
+        <ReportModal
+          curriculum={reportCurriculum}
+          onClose={() => {
+            setShowReportModal(false);
+            setReportCurriculum(null);
+          }}
+        />
+      )}
+      
       {toastMessage && <Toast message={toastMessage} color={toastMessage === '순서대로 학습해 주세요.' ? 'red' : 'blue'} />}
     </div>
   );

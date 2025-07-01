@@ -11,6 +11,7 @@ export default {
         'lg-secondary': '#53091D',
         'lg-tertiary': '#F3BFCD',
         'lg-neutral': '#606060',
+        'lg-neutral-hover': '#B3B3B3',
         'lg-button': '#4599FF',
         'lg-button-hover': '#3577CC',
         'lg-done': '#22C55E',

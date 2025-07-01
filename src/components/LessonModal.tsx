@@ -9,9 +9,10 @@ interface LessonModalProps {
     module: Module;
   };
   onClose: () => void;
+  onShowReport?: () => void;
 }
 
-type LessonStep = 'start' | 'video' | 'quiz' | 'diary' | 'report' | 'complete';
+type LessonStep = 'start' | 'video' | 'quiz' | 'diary' | 'complete';
 
 // 유튜브 embed URL 변환 함수 추가
 function getYoutubeEmbedUrl(url?: string) {
@@ -27,18 +28,14 @@ function getYoutubeEmbedUrl(url?: string) {
   return videoId ? `https://www.youtube.com/embed/${videoId}` : '';
 }
 
-const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
+const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose, onShowReport }) => {
   const [currentStep, setCurrentStep] = useState<LessonStep>('start');
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: string[] }>({});
   const [showQuizResult, setShowQuizResult] = useState<{ [key: number]: boolean }>({});
   const [diaryAnswers, setDiaryAnswers] = useState({ q1: '', q2: '' });
   const [showToast, setShowToast] = useState(false);
-  const [reportAnswers, setReportAnswers] = useState({
-    sense: '',
-    predict: '',
-    literacy: ''
-  });
+
   const [toastMessage, setToastMessage] = useState('');
   const [completedAt, setCompletedAt] = useState<string | null>(null);
 
@@ -52,9 +49,8 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
   const steps: { key: LessonStep; label: string }[] = [
     { key: 'start', label: '레슨 시작' },
     { key: 'video', label: 'VOD 시청' },
-    { key: 'quiz', label: '퀴즈풀기' },
+    { key: 'quiz', label: '퀴즈 풀기' },
     { key: 'diary', label: '메타인지 다이어리' },
-    { key: 'report', label: '최종 리포트' },
     { key: 'complete', label: '레슨 완료' }
   ];
 
@@ -201,17 +197,10 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
       setTimeout(() => setToastMessage(''), 3000);
       return;
     }
-    setCurrentStep('report');
-  };
-
-  const handleReportSubmit = () => {
-    if (!reportAnswers.sense.trim() || !reportAnswers.predict.trim() || !reportAnswers.literacy.trim()) {
-      setToastMessage('답변을 모두 작성해 주세요.');
-      setTimeout(() => setToastMessage(''), 3000);
-      return;
-    }
     setCurrentStep('complete');
   };
+
+
 
   const renderSelectAnswerExpression = () => {
     if (!currentQuiz.expression) return null;
@@ -297,7 +286,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
               <p className="text-lg-primary font-semibold">배정 포인트 : 80p</p>
               <button
                 onClick={() => setCurrentStep('video')}
-                className="mt-8 bg-lg-button text-white px-8 py-3 rounded-lg hover:bg-lg-button-hover transition-colors flex items-center space-x-2 mx-auto"
+                className="mt-8 font-bold bg-lg-button text-white px-8 py-3 rounded-lg hover:bg-lg-button-hover transition-colors flex items-center space-x-2 mx-auto"
               >
                 <span>학습 시작</span>
               </button>
@@ -323,7 +312,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
             <div className="text-center">
               <button
                 onClick={() => setCurrentStep('quiz')}
-                className="bg-lg-button text-white px-6 py-2 rounded-lg hover:bg-lg-button-hover transition-colors"
+                className="font-bold bg-lg-button text-white px-8 py-3 rounded-lg hover:bg-lg-button-hover transition-colors"
               >
                 시청 완료
               </button>
@@ -500,7 +489,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
                 <div className="flex justify-end">
                   <button
                     onClick={handleQuizSubmit}
-                    className="bg-lg-button text-white px-6 py-2 rounded-lg hover:bg-lg-button-hover transition-colors"
+                    className="font-bold bg-lg-button text-white px-8 py-3 rounded-lg hover:bg-lg-button-hover transition-colors"
                   >
                     정답 확인
                   </button>
@@ -557,16 +546,16 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
                   <button
                     onClick={handlePrevQuiz}
                     disabled={currentQuizIndex === 0}
-                    className="flex items-center space-x-1 bg-lg-button text-white px-4 py-2 rounded-lg hover:bg-lg-button-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex items-center space-x-1 font-bold bg-lg-button text-white px-8 py-3 rounded-lg hover:bg-lg-button-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     <span>이전 문제</span>
                   </button>
                   <button
                     onClick={handleNextQuiz}
-                    className="flex items-center space-x-1 bg-lg-button text-white px-4 py-2 rounded-lg hover:bg-lg-button-hover transition-colors"
+                    className="flex items-center space-x-1 font-bold bg-lg-button text-white px-8 py-3 rounded-lg hover:bg-lg-button-hover transition-colors"
                   >
-                    <span>{currentQuizIndex === quizzes.length - 1 ? '퀴즈완료' : '다음 문제'}</span>
+                    <span>{currentQuizIndex === quizzes.length - 1 ? '퀴즈 완료' : '다음 문제'}</span>
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -621,95 +610,15 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
             <div className="flex justify-end">
               <button
                 onClick={handleDiarySubmit}
-                className="bg-[#4599FF] text-white px-6 py-2 rounded-lg hover:bg-[#3577CC] transition-colors"
+                className="font-bold bg-lg-button text-white px-8 py-3 rounded-lg hover:bg-lg-button-hover transition-colors"
               >
-                작성완료
+                작성 완료
               </button>
             </div>
           </div>
         );
 
-      case 'report':
-        return (
-          <div className="py-8 space-y-6">
-            <h3 className="text-xl font-semibold text-gray-800">최종 리포트</h3>
-            
-            <div className="space-y-6">
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="text-lg font-semibold text-lg-primary mb-3">수감각</h4>
-                <div className="space-y-3">
-                  <p className="font-bold text-gray-700">최근에 보고 받은 자료를 하나 선택하여 포함되어 있는 숫자들의 합리성을 판단하시오.</p>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>• 단위 변환에 문제가 없는가?</p>
-                    <p>• 수행된 계산 결과의 크기가 적절한가?</p>
-                    <p>• 적절한 수들끼리 관계 지어 연산이 이루어졌는가?</p>
-                  </div>
-                  <textarea
-                    value={reportAnswers.sense}
-                    onChange={e => setReportAnswers(prev => ({ ...prev, sense: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-4 focus:ring-2 focus:ring-[#4599FF] focus:border-transparent resize-none"
-                    rows={4}
-                    maxLength={1000}
-                    placeholder="답변을 입력하세요 (최대 1,000자)"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">{reportAnswers.sense.length}/1,000자</p>
-                </div>
-              </div>
 
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="text-lg font-semibold text-lg-primary mb-3">예측력</h4>
-                <div className="space-y-3">
-                  <p className="font-bold text-gray-700">최근에 보고 받은 자료를 하나 선택하여 관련 주제에 대한 단기적 변화를 예측해보자.</p>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>• 변화를 알고자 하는 요소가 무엇인지 구체적으로 정의하시오.</p>
-                    <p>• 알고자 하는 변화를 확인하기 위해서 자료에서 무시해야 할 요소가 어떤 것들이 있는가?</p>
-                    <p>• 알고자 하는 변화를 유발하는 X를 무엇으로 설정해야 하는가?</p>
-                    <p>• 주어진 자료에서 드러나지 않은 정보가 있다면?</p>
-                  </div>
-                  <textarea
-                    value={reportAnswers.predict}
-                    onChange={e => setReportAnswers(prev => ({ ...prev, predict: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-4 focus:ring-2 focus:ring-[#4599FF] focus:border-transparent resize-none"
-                    rows={4}
-                    maxLength={1000}
-                    placeholder="답변을 입력하세요 (최대 1,000자)"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">{reportAnswers.predict.length}/1,000자</p>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h4 className="text-lg font-semibold text-lg-primary mb-3">데이터 리터러시</h4>
-                <div className="space-y-3">
-                  <p className="font-bold text-gray-700">회사의 중·장기 전략 자료에 실린 데이터를 구체적으로 살펴보자.</p>
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>• 해당 자료에서 사용한 데이터의 종류를 나열하고, 종류별로 대푯값 혹은 시각적 표현방식을 설명하시오.</p>
-                    <p>• 통계자료가 있다면 각각 표본의 크기와 표준편차를 확인하시오.</p>
-                    <p>• 각각의 데이터가 어떤 의미를 도출하기 위한 근거로 사용되었는지 확인하고, 도출된 의미에서 데이터에 드러난 정보와 숨은 정보를 분류하시오.</p>
-                  </div>
-                  <textarea
-                    value={reportAnswers.literacy}
-                    onChange={e => setReportAnswers(prev => ({ ...prev, literacy: e.target.value }))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-4 focus:ring-2 focus:ring-[#4599FF] focus:border-transparent resize-none"
-                    rows={4}
-                    maxLength={1000}
-                    placeholder="답변을 입력하세요 (최대 1,000자)"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">{reportAnswers.literacy.length}/1,000자</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex justify-end">
-              <button
-                onClick={handleReportSubmit}
-                className="bg-[#4599FF] text-white px-6 py-2 rounded-lg hover:bg-[#3577CC] transition-colors"
-              >
-                작성완료
-              </button>
-            </div>
-          </div>
-        );
 
       case 'complete':
         return (
@@ -724,8 +633,13 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
               <p className="text-gray-600">완료일시 : {completedAt || ''}</p>
               <p className="text-lg-primary font-semibold text-lg">획득 포인트 : 80p</p>
               <button
-                onClick={onClose}
-                className="mt-8 bg-lg-done text-white px-8 py-3 rounded-lg hover:bg-lg-done-hover transition-colors"
+                onClick={() => {
+                  onClose();
+                  if (onShowReport) {
+                    onShowReport();
+                  }
+                }}
+                className="mt-8 font-bold bg-lg-done text-white px-8 py-3 rounded-lg hover:bg-lg-done-hover transition-colors"
               >
                 레슨 완료
               </button>
@@ -754,7 +668,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose }) => {
                 <h2 className="text-2xl font-semibold text-gray-600">학습을 완료했어요.</h2>
               )}
               {currentStep !== 'start' && currentStep !== 'complete' && (
-                <h2 className="text-2xl font-semibold text-gray-600">레슨 : {lesson.lesson.title}</h2>
+                <h2 className="text-2xl font-semibold text-gray-600">{lesson.lesson.title}</h2>
               )}
               <button
                 onClick={handleClose}

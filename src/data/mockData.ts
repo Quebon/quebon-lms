@@ -326,9 +326,9 @@ export const learningResults = [ // 학습관리 페이지 사용자별 학습 �
   {
     user: users[0],
     curriculum: curriculums[0],
-    progress: 13,
-    status: 'in_progress' as 'in_progress',
-    completionDate: undefined,
+    progress: 100,
+    status: 'completed' as 'completed',
+    completionDate: '2025.07.02',
     points: 240,
   },
   {

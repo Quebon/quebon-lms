@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Users, BookOpen, Clock, CheckCircle, AlertCircle, Eye, X, Phone, Mail, Search, Play } from 'lucide-react';
+import { Users, BookOpen, Clock, CheckCircle, AlertCircle, Eye, X, Phone, Mail, Search, Play, FileText } from 'lucide-react';
 import { curriculums, learningResults, userLessonResults, lessonDiaryData, lessonReportData } from '../data/mockData';
 import { LearningResult } from '../types';
 
@@ -15,6 +15,7 @@ const AdminDashboard: React.FC = () => {
   const [showToast, setShowToast] = useState(false);
   const [openDetailIndex, setOpenDetailIndex] = useState<number | null>(null);
   const [showLessonResultModal, setShowLessonResultModal] = useState<any>(null);
+  const [showFinalReportModal, setShowFinalReportModal] = useState<LearningResult | null>(null);
 
   // learningResults를 기준으로 필터링
   const filteredData = learningResults.filter(data => {
@@ -80,7 +81,7 @@ const AdminDashboard: React.FC = () => {
         <h3 className="text-lg font-semibold text-gray-800 mb-4">조회 조건</h3>
         <div className="flex flex-wrap gap-4 items-end mb-4">
           <div className="flex-1 min-w-[180px]">
-            <label className="block text-sm font-medium text-gray-700 mb-2">커리큘럼</label>
+            <label className="block text-sm font-medium text-gray-500 mb-2">커리큘럼</label>
             <div className="relative w-full">
               <select
                 value={selectedCurriculum}
@@ -100,7 +101,7 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <div className="min-w-[100px]">
-            <label className="block text-sm font-medium text-gray-700 mb-2">수료상태</label>
+            <label className="block text-sm font-medium text-gray-500 mb-2">수료상태</label>
             <div className="relative w-full">
               <select
                 value={selectedStatus}
@@ -232,21 +233,56 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-sm font-semibold text-lg-primary">{data.points}p</span>
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => {
-                            if (data.user.name !== '김학습') {
-                              setToastMessage('이 데이터는 샘플입니다.');
-                              setShowToast(true);
-                              setTimeout(() => setShowToast(false), 2000);
-                              return;
-                            }
-                            setOpenDetailIndex(openDetailIndex === index ? null : index);
-                          }}
-                          className={`flex items-center text-sm font-medium transition-colors text-lg-button hover:text-lg-button-hover cursor-pointer`}
-                          style={{ pointerEvents: 'auto' }}
-                        >
-                          <Search className="h-5 w-5" />
-                        </button>
+                        <div className="flex items-center space-x-5">
+                          <button
+                            onClick={() => {
+                              if (data.user.name !== '김학습') {
+                                if (data.progress === 0) {
+                                  return;
+                                }
+                                setToastMessage('이 데이터는 샘플입니다.');
+                                setShowToast(true);
+                                setTimeout(() => setShowToast(false), 2000);
+                                return;
+                              }
+                              setOpenDetailIndex(openDetailIndex === index ? null : index);
+                            }}
+                            className={`flex items-center text-sm font-medium transition-colors ${
+                              data.user.name === '김학습' || data.progress > 0
+                                ? 'text-lg-button hover:text-lg-button-hover cursor-pointer'
+                                : 'text-gray-400 cursor-not-allowed'
+                            }`}
+                            disabled={data.user.name !== '김학습' && data.progress === 0}
+                            style={{ pointerEvents: 'auto' }}
+                          >
+                            <Search className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (data.progress < 100) {
+                                setToastMessage('커리큘럼을 수료하지 않았습니다.');
+                                setShowToast(true);
+                                setTimeout(() => setShowToast(false), 2000);
+                                return;
+                              }
+                              if (data.user.name !== '김학습') {
+                                setToastMessage('이 데이터는 샘플입니다.');
+                                setShowToast(true);
+                                setTimeout(() => setShowToast(false), 2000);
+                                return;
+                              }
+                              setShowFinalReportModal(data);
+                            }}
+                            className={`flex items-center text-sm font-medium transition-colors ${
+                              data.progress >= 100 
+                                ? 'text-lg-button hover:text-lg-button-hover cursor-pointer' 
+                                : 'text-gray-400 cursor-not-allowed'
+                            }`}
+                            disabled={data.progress < 100}
+                          >
+                            <FileText className="h-5 w-5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                     {openDetailIndex === index && (
@@ -292,7 +328,7 @@ const AdminDashboard: React.FC = () => {
                                       <td className="px-4 py-2">
                                         <button 
                                           onClick={() => setShowLessonResultModal(item)}
-                                          className="bg-lg-button text-white px-4 py-2 rounded hover:bg-lg-button-hover text-xs font-semibold"
+                                          className="bg-lg-button text-white px-4 py-2 rounded hover:bg-lg-button-hover text-sm font-semibold"
                                         >
                                           학습결과
                                         </button>
@@ -366,6 +402,14 @@ const AdminDashboard: React.FC = () => {
         <LessonResultModal
           lessonData={showLessonResultModal}
           onClose={() => setShowLessonResultModal(null)}
+        />
+      )}
+
+      {/* 최종 리포트 모달 */}
+      {showFinalReportModal && (
+        <FinalReportModal
+          data={showFinalReportModal}
+          onClose={() => setShowFinalReportModal(null)}
         />
       )}
 
@@ -508,7 +552,7 @@ const LearningDetailModal: React.FC<LearningDetailModalProps> = ({ data, onClose
         <div className="p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="w-full bg-lg-button text-white py-2 px-4 rounded-lg hover:bg-lg-button-hover transition-colors"
+            className="w-full bg-lg-button font-bold text-lg text-white py-3 px-8 rounded-lg hover:bg-lg-button-hover transition-colors"
           >
             닫기
           </button>
@@ -583,7 +627,7 @@ const LessonResultModal: React.FC<LessonResultModalProps> = ({ lessonData, onClo
           <div className="grid grid-cols-3 gap-4 text-lg">
             <div className="text-center">
               <span className="text-gray-600">학습자 : </span>
-              <span className="text-gray-800 font-semibold">김학습</span>
+              <span className="text-gray-800 font-semibold">대리 김학습</span>
             </div>
             <div className="text-center">
               <span className="text-gray-600">레슨 : </span>
@@ -625,17 +669,19 @@ const LessonResultModal: React.FC<LessonResultModalProps> = ({ lessonData, onClo
             {diaryData ? (
               <div className="space-y-4">
                 <div className="bg-white p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-gray-800 mb-2">Q1. 영상을 보기 전의 나라면 이 문제를 어떻게 풀었을까?</h4>
-                  <p className="text-sm text-gray-700 leading-relaxed">{diaryData.q1Answer}</p>
+                  <h4 className="font-semibold text-xl text-gray-800 mb-2">Q1. 영상을 보기 전의 나라면 이 문제를 어떻게 풀었을까?</h4>
+                  <h4 className="text-base font-semibold text-lg-primary mb-3 mt-5">답변 결과</h4>
+                  <p className="text-lg text-gray-700 leading-relaxed">{diaryData.q1Answer}</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-blue-200">
-                  <h4 className="font-semibold text-gray-800 mb-2">Q2. 영상을 본 이후의 나는 이 문제를 어떻게 해결할 것인가?</h4>
-                  <div className="text-xs text-gray-500 mb-2">
+                  <h4 className="font-semibold text-xl text-gray-800 mb-2">Q2. 영상을 본 이후의 나는 이 문제를 어떻게 해결할 것인가?</h4>
+                  <div className="text-lg text-gray-500 mb-2">
                     <p>• 문제에서 보는 핵심이 무엇인가요?</p>
                     <p>• 어렵다면 왜 어려운가요?</p>
                     <p>• 내가 이미 알고 있는 것은 무엇인가요?</p>
                   </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{diaryData.q2Answer}</p>
+                  <h4 className="text-base font-semibold text-lg-primary mb-3 mt-5">답변 결과</h4>
+                  <p className="text-lg text-gray-700 leading-relaxed">{diaryData.q2Answer}</p>
                 </div>
               </div>
             ) : (
@@ -645,59 +691,101 @@ const LessonResultModal: React.FC<LessonResultModalProps> = ({ lessonData, onClo
             )}
           </div>
 
-          {/* 최종 리포트 */}
+
+        </div>
+        
+        <div className="p-6 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="w-full bg-lg-button font-bold text-lg text-white py-3 px-8 rounded-lg hover:bg-lg-button-hover transition-colors"
+          >
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface FinalReportModalProps {
+  data: LearningResult;
+  onClose: () => void;
+}
+
+const FinalReportModal: React.FC<FinalReportModalProps> = ({ data, onClose }) => {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-[900px] max-h-[85vh] overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-800">최종 리포트</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        {/* 기본 정보 - 고정 헤더 */}
+        <div className="bg-gray-50 p-4 border-b border-gray-200 sticky top-0 z-10">
+          <div className="grid gap-4 text-lg" style={{ gridTemplateColumns: '1fr 3fr 2fr' }}>
+            <div className="text-center">
+              <span className="text-gray-600">작성자 : </span>
+              <span className="text-gray-800 font-semibold">김학습</span>
+            </div>
+            <div className="text-center">
+              <span className="text-gray-600">커리큘럼 : </span>
+              <span className="text-gray-800 font-semibold">{data.curriculum.title}</span>
+            </div>
+            <div className="text-center">
+              <span className="text-gray-600">작성일시 : </span>
+              <span className="text-gray-800 font-semibold">2025.07.02 15:00</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
+          {/* 수 감각 문항 */}
           <div className="bg-lg-neutral/10 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-3">최종 리포트</h3>
-            {reportData ? (
-              <div className="space-y-4">
-                <div className="bg-white p-4 rounded-lg border border-blue-200">
-                  <h4 className="text-lg font-semibold text-lg-primary mb-3">수감각</h4>
-                  <p className="font-bold text-gray-700 mb-2">최근에 보고 받은 자료를 하나 선택하여 포함되어 있는 숫자들의 합리성을 판단하시오.</p>
-                  <div className="text-xs text-gray-500 mb-2">
-                    <p>• 단위 변환에 문제가 없는가?</p>
-                    <p>• 수행된 계산 결과의 크기가 적절한가?</p>
-                    <p>• 적절한 수들끼리 관계 지어 연산이 이루어졌는가?</p>
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{reportData.senseAnswer}</p>
-                </div>
-
-                <div className="bg-white p-4 rounded-lg border border-blue-200">
-                  <h4 className="text-lg font-semibold text-lg-primary mb-3">예측력</h4>
-                  <p className="font-bold text-gray-700 mb-2">최근에 보고 받은 자료를 하나 선택하여 관련 주제에 대한 단기적 변화를 예측해보자.</p>
-                  <div className="text-xs text-gray-500 mb-2">
-                    <p>• 변화를 알고자 하는 요소가 무엇인지 구체적으로 정의하시오.</p>
-                    <p>• 알고자 하는 변화를 확인하기 위해서 자료에서 무시해야 할 요소가 어떤 것들이 있는가?</p>
-                    <p>• 알고자 하는 변화를 유발하는 X를 무엇으로 설정해야 하는가?</p>
-                    <p>• 주어진 자료에서 드러나지 않은 정보가 있다면?</p>
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{reportData.predictAnswer}</p>
-                </div>
-
-                <div className="bg-white p-4 rounded-lg border border-blue-200">
-                  <h4 className="text-lg font-semibold text-lg-primary mb-3">데이터 리터러시</h4>
-                  <p className="font-bold text-gray-700 mb-2">회사의 중·장기 전략 자료에 실린 데이터를 구체적으로 살펴보자.</p>
-                  <div className="text-xs text-gray-500 mb-2">
-                    <p>• 해당 자료에서 사용한 데이터의 종류를 나열하고, 종류별로 대푯값 혹은 시각적 표현방식을 설명하시오.</p>
-                    <p>• 통계자료가 있다면 각각 표본의 크기와 표준편차를 확인하시오.</p>
-                    <p>• 각각의 데이터가 어떤 의미를 도출하기 위한 근거로 사용되었는지 확인하고, 도출된 의미에서 데이터에 드러난 정보와 숨은 정보를 분류하시오.</p>
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">{reportData.literacyAnswer}</p>
+            <div className="space-y-4">
+              {/* 질문 영역 */}
+              <div className="bg-white p-4 rounded-lg">
+                <p className="text-xl font-bold text-gray-700 mb-3">최근에 보고 받은 자료를 하나 선택하여 포함되어 있는 숫자들의 합리성을 판단하시오.</p>
+                <div className="text-lg text-gray-600">
+                  <p>• 단위 변환에 문제가 없는가?</p>
+                  <p>• 수행된 계산 결과의 크기가 적절한가?</p>
+                  <p>• 적절한 수들끼리 관계 지어 연산이 이루어졌는가?</p>
                 </div>
               </div>
-            ) : (
-              <div className="bg-white p-4 rounded-lg border border-blue-200">
-                <p className="text-sm text-gray-500 italic">작성된 리포트가 없습니다.</p>
+              
+              {/* 답변 영역 */}
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <h4 className="text-lg font-semibold text-lg-primary pl-4 mb-3 mt-5">제출 결과</h4>
+                <div className="bg-white p-4 rounded-lg">
+                  <p className="text-lg text-gray-700 leading-relaxed">
+                    최근 분기 매출 보고서에서 월별 매출 증가율이 15%, 20%, 35%로 표시되어 있었습니다. 
+                    이 수치들을 살펴보면 단위는 모두 퍼센트로 일관되게 표시되어 문제가 없어 보입니다. 
+                    하지만 35%라는 마지막 달의 증가율이 앞선 두 달에 비해 급격히 높아 보입니다.
+                    <br /><br />
+                    계산 결과의 크기를 검토해보니, 기준 매출액 대비 35% 증가는 특별한 마케팅 캠페인이나 
+                    계절적 요인이 없다면 다소 과도해 보입니다. 전년 동기 대비로 비교했을 때도 
+                    업계 평균 성장률을 크게 상회하는 수치입니다.
+                    <br /><br />
+                    또한 각 월별 데이터가 누적 증가율이 아닌 전월 대비 증가율로 
+                    올바르게 계산되었는지 확인이 필요합니다.
+                  </p>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
         
         <div className="p-6 border-t border-gray-200">
           <button
             onClick={onClose}
-            className="w-full bg-lg-button text-white py-2 px-4 rounded-lg hover:bg-lg-button-hover transition-colors"
+            className="w-full bg-lg-button font-bold text-lg text-white py-3 px-8 rounded-lg hover:bg-lg-button-hover transition-colors"
           >
-            닫기
+            확인
           </button>
         </div>
       </div>

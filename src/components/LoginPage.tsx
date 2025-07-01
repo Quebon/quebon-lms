@@ -58,7 +58,7 @@ const LoginPage: React.FC = () => {
             <img src="/ci/LG.svg" alt="LG Logo" className="h-16 w-16" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            LG CNS LMS System
+            LG CNS Learning Platform
           </h1>
           <p className="text-gray-600 text-lg">
             기업 맞춤형 AX 사고력 교육 플랫폼
