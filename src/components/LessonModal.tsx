@@ -572,14 +572,14 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose, onShowReport
             
             <div className="space-y-6">
               <div>
-                <label className="block text-base font-bold text-gray-700 mb-2">
+                <label className="block text-lg font-bold text-gray-700 mb-2">
                   Q1. 영상을 보기 전의 나라면 이 문제를 어떻게 풀었을까?
                 </label>
                 <textarea
                   value={diaryAnswers.q1}
                   onChange={(e) => setDiaryAnswers(prev => ({ ...prev, q1: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#4599FF] focus:border-transparent resize-none"
-                  rows={4}
+                  rows={6}
                   maxLength={1000}
                   placeholder="답변을 입력하세요 (최대 1,000자)"
                 />
@@ -587,10 +587,10 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose, onShowReport
               </div>
               
               <div>
-                <label className="block text-base font-bold text-gray-700 mb-2">
+                <label className="block text-lg font-bold text-gray-700 mb-2">
                   Q2. 영상을 본 이후의 나는 이 문제를 어떻게 해결할 것인가?
                 </label>
-                <div className="text-sm text-gray-600 mb-2">
+                <div className="text-base text-gray-600 mb-2">
                   <p>• 문제에서 보는 핵심이 무엇인가요?</p>
                   <p>• 어렵다면 왜 어려운가요?</p>
                   <p>• 내가 이미 알고 있는 것은 무엇인가요?</p>
@@ -599,7 +599,7 @@ const LessonModal: React.FC<LessonModalProps> = ({ lesson, onClose, onShowReport
                   value={diaryAnswers.q2}
                   onChange={(e) => setDiaryAnswers(prev => ({ ...prev, q2: e.target.value }))}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#4599FF] focus:border-transparent resize-none"
-                  rows={4}
+                  rows={6}
                   maxLength={1000}
                   placeholder="답변을 입력하세요 (최대 1,000자)"
                 />
